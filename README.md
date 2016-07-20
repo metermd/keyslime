@@ -134,13 +134,12 @@ Here are just a few random notes gathered about the implementation:
     amount of time between 0 seconds and 3 minutes when it wakes up before
     retrieving keys.
   * `keyslime-louis` generates 24 hours of past keys on first launch (or
-    whenever they don't exist).  This is to avoid special cases in both
-    component's code, and to allow for stable configuration.  (e.g., an nginx
+    whenever they don't exist).  This is to avoid corner cases in both
+    component's code, and to allow for stable configuration.  (E.g., an nginx
     configuration file referencing 24 symlinks instead of a variable amount of
-    symlinks, some of which won't exist and will stop nginx from launching.)  
-    These key files, which are only 48 bytes of random data, are harmless unless
-    you're the type of person who worries about the SHAs of git commits
-    *accidentally* colliding.
+    symlinks, some of which won't exist.  These key files, which are only 48
+    bytes of random data, are harmless unless you're the type of person who
+    worries about the SHAs of git commits *accidentally* colliding.
   * Keyslime's functionality is so intertwined with its operating system and
     network environment that it's really hard to add meaningful tests.  Once
     everything is mocked, what's left is too trivial to really do any good.  If
@@ -189,10 +188,7 @@ The project homepage exists at https://github.com/mieko/keyslime
 Contributions are welcome via GitHub
 
 ## Footnotes
-
-Keyslime is released to the public under the terms of an MIT-style license.  See
-the LICENSE file for details.
-
-*dana* stands for *Distributed, Authenticated, Node Automation*
-
-*louis* is the dude from Ghostbusters
+  1. Keyslime is released to the public under the terms of the MIT license.
+     See the LICENSE file for details.
+  2. *dana* stands for *Distributed, Authenticated, Node Automation*
+  3. *louis* is the dude from Ghostbusters
