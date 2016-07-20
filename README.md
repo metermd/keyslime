@@ -8,6 +8,12 @@ of front-end web servers.  It implements a model roughly equivalent to
 You can read about the problem Keyslime attempts to solve
 [in this article by Google's Adam Langley](https://www.imperialviolet.org/2013/06/27/botchingpfs.html).
 
+As a side-effect of its design, it's also great for generally oozing down your
+HTTPS private keys from a central server to TLS termination endpoints.  
+
+It keeps the keys it generates in non-swappable RAM, so they never touch the
+disk (You can decide against this to survive reboots, but do so informed).
+
 The system consists of two components:
   1. `keyslime-louis`, generates TLS Session Ticket keys, rotates them, and
      sets up a directory that clients can pull from.
@@ -15,9 +21,9 @@ The system consists of two components:
      periodically connects to `keyslime-louis` and fetches keys.
 
 With something this security-sensitive, the devil is in the details.  We rely on
-Unix fundamentals as much as possible, using Unix user accounts for
-authentication and access control, and SSH + key authorization for data
-transfer.
+Unix fundamentals as much as possible, using Unix user accounts and permissions
+for authentication and access control, SSH + key authorization for data
+transfer, and systemd for running the whole thing.
 
 ## Table of Contents
  * [Moving Parts](#moving-parts)
@@ -37,8 +43,9 @@ clients.
 You need to install `keyslime-louis`.  It creates a user named *keyslime-louis*
 which has a home directory in `/var/lib/keyslime-louis`.  It also creates an
 account for the clients to login as: *keyslime-dana*.  Her home directory lives
-in `/var/lib/keyslime-louis/exports`.  *keyslime-dana* can only read from her
-home directory, while *keyslime-louis* can read and write to it.
+in `/var/lib/keyslime-louis/exports`.  This is a 1MB `ramfs` Ramdisk.  
+*keyslime-dana* can only read from her home directory, while *keyslime-louis*
+can read and write to it.
 
 Periodically, `keyslime-louis` is woken up and examines the exports directory.  
 Old keys are removed, and new keys are generated as needed.  `keyslime-louis`
@@ -59,13 +66,13 @@ files in `/var/lib/keyslime-louis/exports`.  `keyslime-dana` clients grab the
 entire contents of the directory when they stop by.
 
 The server this runs on needs to be locked down, allowing only SSH access,
-and hopefully only from internal networks.  Note: keys ARE stored on physical
-media, so that it can survive a reboot.  This means that, at any moment, the
-last 24 hours of session ticket keys are at risk to anyone that gains
-unauthorized access to the server.  This can defeat forward-secrecy for any
-transmissions that occurred with those keys.  Read Adam Langley's article
-linked at the start of this document to get a grasp on the implications of
-this.  This may change in the future.
+and hopefully only from internal networks.  Note: keys are not stored on
+physical media, so key can't survive a reboot.  This is a feature.  However,
+because they're in memory, the last 24 hours of session ticket keys are at risk
+to anyone that gains unauthorized access to the server.  This can defeat
+forward-secrecy for any transmissions that occurred with those keys.  Read Adam
+Langley's article linked at the start of this document to get a grasp on the
+implications of this.
 
 ### Key Clients
 This is a node that needs to be able to fetch TLS Session Ticket keys from a
@@ -139,25 +146,26 @@ Here are just a few random notes gathered about the implementation:
     enforce a partition size, but its contents may get swapped to disk.  `ramfs`
     never gets swapped, but will grow to fill its contents, potentially
     exhausting memory if you do anything crazy.  In normal operation, Keyslime
-    only uses a few KB of storage on this partition, but if you start generating
+    only uses a few KB of storage on this volume, but if you start generating
     Blu-Ray disk images instead of keys, you'll run into problems.
 
 ## Requirements & Installation
 Even though all of this sounds pretty complicated, I've tried to keep Keyslime
 as simple as possible, in both architecture and implementation.  This is
 accomplished by heavily leaning on existing mechanisms of the host operating
-system.
+system (which currently only includes Linux).
 
-Keyslime relies on systemd for configuration-after-installation, activation, and
-cron-style scheduling.  This offloads a lot of complicated stuff to systemd.
-Check out the unit files.  There are no plans to add support for other init
-systems, but isolated PRs will be happily received if they are non-intrusive and
-don't change how the system works architecturally.  Be warned, however, half of
-the implementation is orchestrated by systemd.
+Keyslime relies on systemd for configuration-after-installation, boot-time
+activation, and cron-style scheduling.  This offloads a lot of complicated stuff
+to systemd.  Check out the unit files.  There are no plans to add support for
+other init systems, but isolated PRs will be happily received if they are
+non-intrusive and don't change how the system works architecturally.  Be warned,
+however: half of the implementation is orchestrated by systemd.  It'd be cool to
+see a launchd version.
 
 Keyslime has been used heavily in production, but only on our platform of
 choice: Ubuntu 16.04.  I don't think there's anything stopping it from working
-on other systemd-based systems, though.  Let me know how that goes.
+on other systemd-based Linux systems, though.  Let me know how that goes.
 
 Keyslime is implemented in Ruby (*... not Rails*), and I believe *requires*
 Ruby 2.3.  It should run with system packages of vanilla Ruby 2.3, and can be
@@ -168,3 +176,19 @@ project, though.  It's a set of executables, not a library.
 
 It'd be nice to have official deb and RPM packages available, or maybe even
 apt and yum repositories, but neither have happened yet.
+
+## Authors
+Keyslime was written at meter.md by Mike A. Owens <mike@meter.md>,
+<mike@filespanker.com>
+
+The project homepage exists at https://github.com/mieko/keyslime
+
+Contributions are welcome via GitHub
+
+## Footnotes
+
+Keyslime is released to the public under the terms of an MIT-style license.  See
+the LICENSE file for details.
+
+*dana* stands for *Distributed, Authenticated, Node Automation*
+*louis* is the dude from Ghostbusters
