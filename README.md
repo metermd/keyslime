@@ -1,5 +1,15 @@
 # Keyslime: Key & Ticket Distribution for Server Fleets
 
+## Table of Contents
+ * [Introduction](#introduction)
+ * [Moving Parts](#moving-parts)
+   * [Master Key Server](#master-key-server)
+   * [Key Clients](#key-clients)
+ * [Miscellaneous Implementation Notes](#miscellaneous-implementation-notes)
+ * [Requirements and Installation](#requirements-and-installation)
+ * [Authors](#authors)
+ * [Footnotes](#footnotes)
+
 ## Introduction
 Keyslime was created to distribute shared TLS Session Ticket keys across a fleet
 of front-end web servers.  It implements a model roughly equivalent to
@@ -24,13 +34,6 @@ With something this security-sensitive, the devil is in the details.  We rely on
 Unix fundamentals as much as possible, using Unix user accounts and permissions
 for authentication and access control, SSH + key authorization for data
 transfer, and systemd for running the whole thing.
-
-## Table of Contents
- * [Moving Parts](#moving-parts)
-   * [Master Key Server](#master-key-server)
-   * [Key Clients](#key-clients)
- * [Miscellaneous Implementation Notes](#miscellaneous-implementation-notes)
- * [Requirements and Installation](#requirements-and-installation)
 
 ## Moving Parts
 Here's a breakdown of how it's implemented, on the master key server and
