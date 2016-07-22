@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+# Runs as: root
+# Rationale: Must be able to spy on and kill running processes of keyslime-dana
+
+# This program checks if any danas are connected to the host.  If so, it gives
+# them a chance to leave, will but ultimately kill their sessions.
+
+# We'll wait for up to 10 seconds for lingering clients to get out.
+for i in $(seq 1 10) ; do
+  EXISTING_DANAS='0'
+
+  for user in $(users) ; do
+    if [[ "$user" == 'keyslime-dana' ]]; then
+      EXISTING_DANAS='1'
+      break
+    fi
+  done
+
+  if [[ "$EXISTING_DANAS" == '0' ]]; then
+    break
+  fi
+
+  sleep 1
+done
+
+# TOC/TOU race here if the last dana logged out after the check above, but
+# before this killall.  It's fine: our intent is the same, but ignore killall
+# saying there are no processes running for that user.
+killall -u 'keyslime-dana' 2>/dev/null

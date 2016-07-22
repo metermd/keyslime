@@ -1,0 +1,29 @@
+desc "Install keyslime-louis into current system.  Needs superuser "
+task :install do
+  if File.writable?('/usr/lib')
+    mkdir_p '/usr/lib/keyslime-louis'
+    cp_r Dir.glob('bin/*'), '/usr/lib/keyslime-louis'
+    cp_r Dir.glob('*.service'), '/etc/systemd/system'
+    sh '/usr/lib/keyslime-louis/bin/create-users'
+  else
+    $stderr.puts "Cannot create /usr/lib/keyslime-louis.  Try with a superuser"
+    exit 1
+  end
+end
+
+desc "Uninstall keyslime-louis from this node.  Needs superuser permissions"
+task :install do
+  if ! Dir.exist?('/usr/lib/keyslime-louis')
+    $stderr.puts "Directory /usr/lib/keyslime-louis doesn't exist"
+    exit 1
+  end
+
+  if ! File.writable?('/usr/lib/keyslime-louis')
+    $stderr.puts "No access to /usr/lib/keyslime-louis.  Try with a superuser"
+    exit 1
+  end
+  sh '/usr/lib/keyslime-louis/bin/uninstall'
+  rm_rf '/usr/lib/keyslime-louis'
+  rm_f '/etc/systemd/system/keyslime-louis.service'
+  rm_f '/etc/systemd/system/keyslime-louis-ramdisk.service'
+end

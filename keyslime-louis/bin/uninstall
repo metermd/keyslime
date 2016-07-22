@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+# This program only uninstalls additions it makes: users, groups, and volumes.
+# Meant to be called late in a package's uninstall script.
+
+BINS=$(dirname "$0")
+
+# If, for some reason, there are any clients
+"$BINS/lock-exports" -l
+
+# I don't feel great about deluser deleting a directory containing a mounted
+# volume.  Get rid of the ramdisk.
+"$BINS/destroy-ramdisk"
+
+deluser --system --remove-home keyslime-dana
+deluser --system --remove-home keyslime-louis
+delgroup --system --only-if-empty keyslime-access

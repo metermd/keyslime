@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+# This program waits for all clients to disconnect, then destroys the ramdisk.
+
+BINS=$(dirname "$0")
+
+# Give the danas a chance to leave, but acquire a lock regardless.
+"$BINS/lock-exports" -l
+
+# Because there's nothing persistent, this is all we need to do.
+if ([ -d '/var/lib/keyslime-louis/exports' ] && \
+    mount | grep '/var/lib/keyslime-louis/exports' > /dev/null); then
+  umount -t ramfs '/var/lib/keyslime-louis/exports'
+fi

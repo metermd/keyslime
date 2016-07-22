@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+# This program creates the ramdisk.  When it is done, it is configured for
+# exclusive access by louis
+
+BINS=$(dirname "$0")
+
+# Unless the directory exists and is mounted...
+if ! ([ -d '/var/lib/keyslime-louis/exports' ] && \
+      mount | grep '/var/lib/keyslime-louis/exports' > /dev/null); then
+  # Create it and mount it.
+  mkdir -p '/var/lib/keyslime-louis/exports'
+  mount -t ramfs -o noexec,nodev,nosuid,rw,size=1M none '/var/lib/keyslime-louis/exports'
+fi
+
+# A good default state: managed by keyslime-louis
+"$BINS/lock-exports" -l

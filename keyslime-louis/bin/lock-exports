@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+# this program flips the access model of the shared exports folder.
+#
+# If it receives the -u flag, danas will be free to visit
+#
+# If it does not, the dana account is prevented from logging in (this relies on
+# sshd's mode checking), it waits for all logged-in danas to be done (for a
+# reasonable amount of time), then sets permissions for louis to write.
+
+BINS=$(dirname "$0")
+
+if [[ "$1" == '-l' ]]; then
+  # Stop all logins. SSH won't allow a new authorized_keys login without the
+  # home directory owned by the user.
+  chown keyslime-louis:keyslime-access '/var/lib/keyslime-louis/exports'
+
+  # Get the stragglers...
+  "$BINS/wait-for-danas-to-quit"
+
+  # now it's locked, w.r.t. remote access.
+  chmod u=rwx,g=,o= '/var/lib/keyslime-louis/exports'
+elif [[ "$1" == '-u' ]]; then
+  # Revoke write-access because we're about to flip the user
+  chmod u=rx,g=,o= '/var/lib/keyslime-louis/exports'
+
+  # Unlock it.  Dana's can now get in, and louis can no longer write
+  chown keyslime-dana:keyslime-access '/var/lib/keyslime-louis/exports'
+else
+  echo "required argument missing: one of -l or -u" >&2
+  exit 1
+fi
