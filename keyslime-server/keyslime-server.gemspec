@@ -1,11 +1,11 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'keyslime/server/version'
+VERSION = File.read('../KEYSLIME_VERSION').chomp
 
 Gem::Specification.new do |spec|
   spec.name          = "keyslime-server"
-  spec.version       = Keyslime::Server::VERSION
+  spec.version       = VERSION
   spec.authors       = ["Mike A. Owens"]
   spec.email         = ["mike@meter.md"]
 
