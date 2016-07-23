@@ -12,6 +12,7 @@ addgroup --system keyslime-access
 adduser --system \
         --disabled-password \
         --gecos 'Keyslime Generator (keyslime-louis)' \
+        --no-create-home \
         --home '/var/lib/keyslime-louis' \
         --ingroup keyslime-access \
         keyslime-louis
@@ -24,6 +25,7 @@ mkdir -p '/var/lib/keyslime-louis/authorized_keys.d'
 chmod -R u=rwx,g=x,o= '/var/lib/keyslime-louis'
 
 # pay attention: the dana home directory is INSIDE louis'
+mkdir -p /var/lib/keyslime-louis/exports
 adduser --system \
         --disabled-password \
         --gecos 'Keyslime Client Access (keyslime-dana)' \
