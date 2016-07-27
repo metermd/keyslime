@@ -1,4 +1,4 @@
-$PACKAGES = %w(keyslime keyslime-common keyslime-client keyslime-server)
+$PACKAGES = %w(keyslime-common keyslime-client keyslime-server keyslime)
 
 %w(build clean clobber install install:local release test).each do |metatask|
   desc "Execute `rake #{metatask}` for all sub-packages"
